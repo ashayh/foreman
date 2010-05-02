@@ -1,3 +1,4 @@
+<%= javascript_include_tag "host_checkbox" %>
 <div id="hostlist">
 <%= link_to_function "Search", toggle_div(:search) %>
 
@@ -16,31 +17,38 @@
 </div>
 
   <% if hosts.size > 0 -%>
-    <table class="list">
-      <caption> <%= header ||= "" -%> </caption>
-      <tr>
-        <th><%= order @search, :by => :name %></th>
-        <th>Operating system</th>
-        <th>Environment</th>
-        <th>Model</th>
-        <th>Host Group</th>
-        <th><%= order @search, :by => :last_report %></th>
-        <th>Edit</th>
-        <th>Delete</th>
-      </tr>
-      <% hosts.each do |host| -%>
-        <tr class="<%= cycle("even", "odd") -%>">
-          <td><%=name_column(host) %></td>
-          <td><%=h host.try(:os) %></td>
-          <td><%=h host.try(:environment) %></td>
-          <td><%=h host.try(:model) %></td>
-          <td><%=h host.try(:hostgroup) %></td>
-          <td><%=last_report_column(host) %></td>
-          <td><%= link_to  'Edit', edit_host_url(host)  %></td>
-          <td><%= link_to "Destroy", host, :confirm => 'Are you sure?', :method => :delete %></td>
+    <br><input type='button' value='Toggle Check All' onClick='toggleCheck()' />
+    <% form_tag(edit_action_hosts_path,:method => "get", :id => "host_select_form") do %>
+    <%= submit_tag "Edit Checked Hosts" %>
+      <table class="list">
+        <caption> <%= header ||= "" -%> </caption>
+        <tr>
+          <th></th>
+          <th><%= order @search, :by => :name %></th>
+          <th>Operating system</th>
+          <th>Environment</th>
+          <th>Model</th>
+          <th>Host Group</th>
+          <th><%= order @search, :by => :last_report %></th>
+          <th>Edit</th>
+          <th>Delete</th>
+        </tr>
+        <% hosts.each do |host| -%>
+          <tr class="<%= cycle("even", "odd") -%>">
+            <td><%= check_box_tag "host_ids[]", host.id, false, :class => 'host_select_boxes', :onClick => 'insertHostVal(this)' %></td>
+            <td><%=name_column(host) %></td>
+            <td><%=h host.try(:os) %></td>
+            <td><%=h host.try(:environment) %></td>
+            <td><%=h host.try(:model) %></td>
+            <td><%=h host.try(:hostgroup) %></td>
+            <td><%=last_report_column(host) %></td>
+            <td><%= link_to  'Edit', edit_host_url(host)  %></td>
+            <td><%= link_to "Destroy", host, :confirm => 'Are you sure?', :method => :delete %></td>
+          </tr>
         <% end -%>
-      </tr>
-    </table>
+      </table>
+    <%= submit_tag "Edit Checked Hosts" %>
+    <% end %>
   <% else -%>
     <p>No Hosts found</p>
   <% end -%>

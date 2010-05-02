@@ -1,0 +1,20 @@
+<h2>Choose the action you want to apply to the selected Hosts:</h2>
+
+<%= button_to 'Change Group', :controller => 'hosts', :action => 'select_hostgroup' %>
+<br>
+<%= button_to 'Edit Parameters', :controller => 'hosts', :action => 'edit_multiple' %>
+<br>
+<%= button_to 'Add/Remove Parameters', :controller => 'hosts', :action => 'add_parameter' %>
+
+<h4>Click this button to clear all selected hosts and return to Hosts list:</h5>
+<%= button_to 'Clear Selected Hosts', :controller => 'hosts', :action => 'update_multiple', :reset => "true" %>
+<h5>Please check the following list of hosts which will be edited:</h4>
+<br>
+<ul>
+  <% for host in @hosts %>
+    <li>
+      <%= hidden_field_tag "host_ids[]", host.id %>
+      <%=h host.name %>
+    </li>
+  <% end %>
+</ul>

@@ -1,0 +1,21 @@
+<% form_tag update_multiple_hosts_path, :method => :post do %>
+  <% for param in Parameter.find(:all, :select => "DISTINCT name") %>
+    <div>
+      <%= text_field :name, param.name, :size=>'150' %>
+      <%= param.name %>
+    </div>
+  <% end %>
+ <p><%= submit_tag "Edit these Parameter(s)" %></p>
+<% end %>
+
+<h4>Please check the following list of hosts whose parameters will be changed:</h4>
+<h5>Click this button to clear all selected hosts and return to Hosts list:</h5>
+<%= button_to 'Clear Selected Hosts', :controller => 'hosts', :action => 'update_multiple', :reset => "true" %>
+<ul>
+  <% for host in @hosts %>
+    <li>
+      <%= hidden_field_tag "host_ids[]", host.id %>
+      <%= host.name %>
+    </li>
+  <% end %>
+</ul>

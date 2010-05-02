@@ -1,0 +1,14 @@
+<h3>Add/Remove Parameters Coming soon... </h3>
+
+<h4>Click this button to clear all selected hosts and return to Hosts list:</h5>
+<%= button_to 'Clear Selected Hosts', :controller => 'hosts', :action => 'update_multiple', :reset => "true" %>
+<h5>Please check the following list of hosts whose parameters will be changed:</h4>
+<br>
+<ul>
+  <% for host in @hosts %>
+    <li>
+      <%= hidden_field_tag "host_ids[]", host.id %>
+      <%= host.name %>
+    </li>
+  <% end %>
+</ul>

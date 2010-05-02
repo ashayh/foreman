@@ -47,6 +47,15 @@ class HostsController < ApplicationController
     end
   end
 
+  def edit_action
+    if session[:selected].nil?
+      flash[:foreman_error] = 'No Hosts selected'
+      redirect_to(hosts_path)
+    else
+      @hosts = Host.find(session[:selected].keys)
+    end
+  end
+
   def edit
     @host = Host.find(params[:id])
     @environment = @host.environment
@@ -62,6 +71,85 @@ class HostsController < ApplicationController
     else
       render :action => 'edit'
     end
+  end
+
+  def edit_multiple
+    if session[:selected].nil?
+      flash[:foreman_error] = 'No Hosts selected'
+      redirect_to(hosts_path)
+    else
+      @hosts = Host.find(session[:selected].keys)
+    end
+  end
+
+  def update_multiple
+    if params[:reset] == "true"
+      reset_session
+      @search = Host.search(params[:search])
+      @hosts = @search.all.paginate(:page => params[:page])
+      flash[:foreman_notice] = 'Session cleared.'
+      redirect_to(hosts_path) and return
+    end
+    @hosts_without_params ||= {}
+    @hosts_to_edit = Host.find(session[:selected].keys)
+    @hosts_to_edit.each do |host_to_edit|
+      myparams = []
+      host_to_edit.host_parameters.each do |hp|
+        myparams << hp.name.to_str
+        unless params[:name][hp.name].chomp.empty?
+           hp.value = params[:name][hp.name]
+           host_to_edit.save(perform_validation = false)
+        end
+      end
+      params[:name].each do |pname,pvalue|
+        if !myparams.include?(pname) && !pvalue.chomp.empty?
+          @hosts_without_params[host_to_edit.name] ||= []
+          @hosts_without_params[host_to_edit.name] << pname
+        end
+      end
+    end
+    if @hosts_without_params.length !=0
+        reset_session
+        render :text => "\#These hosts did not have the selected parameters and were not updated: <br></br>" + @hosts_without_params.to_yaml.gsub("\n","<br>")
+    else
+    reset_session
+    flash[:foreman_notice] = 'Updated hosts!'
+    redirect_to(hosts_path)
+    end
+  end
+
+  def add_parameter
+    if session[:selected].nil?
+      flash[:foreman_error] = 'No Hosts selected'
+      redirect_to(hosts_path)
+    else
+      @hosts = Host.find(session[:selected].keys)
+    end
+  end
+
+  def select_hostgroup
+    if session[:selected].nil?
+      flash[:foreman_error] = 'No Hosts selected'
+      redirect_to(hosts_path)
+    else
+      @hosts = Host.find(session[:selected].keys, :order => "hostgroup_id ASC")
+    end
+  end
+
+  def update_hostgroup
+    if params["hostgroup"]["hostgroup_id_equals"].empty?
+      flash[:foreman_error] = 'No Hostgroup selected!'
+      redirect_to(select_hostgroup_hosts_path) and return
+    end
+    @hosts_to_edit = Host.find(:all, :conditions => {:id => session[:selected].keys})
+    @hosts_to_edit.each do |host_to_edit|
+      hg = Hostgroup.find(params["hostgroup"]["hostgroup_id_equals"])
+      !hg.nil? && host_to_edit.hostgroup=hg
+      host_to_edit.save(perform_validation = false)
+    end
+    reset_session
+    flash[:foreman_notice] = 'Updated hosts: Changed Hostgroup'
+    redirect_to(hosts_path)
   end
 
   def destroy
@@ -90,6 +178,13 @@ class HostsController < ApplicationController
 
   def os_selected
     assign_parameter "operatingsystem"
+  end
+
+  def save_checkbox
+    session[:selected] ||= {}
+    params[:is_checked] == "true" && session[:selected][params[:box]] = params[:box]
+    params[:is_checked] == "false" && session[:selected][params[:box]] = nil
+    render :nothing => true
   end
 
  # list AJAX methods
@@ -232,5 +327,4 @@ class HostsController < ApplicationController
       return head(:not_found)
     end
   end
-
 end

@@ -1,0 +1,18 @@
+<% form_for :hostgroup, :url => { :action => "update_hostgroup" },:html => { :method => :post } do |f| %>
+  <%= f.label :hostgroup, "Select Hostgroup:<br>" %>
+  <%= f.collection_select :hostgroup_id_equals, Hostgroup.all, :id, :name, :include_blank => true %>
+  <p><%= f.submit "Change Hostgroup!" %></p>
+<% end %>
+
+<h4>Click this button to clear all selected hosts and return to Hosts list:</h5>
+<%= button_to 'Clear Selected Hosts', :controller => 'hosts', :action => 'update_multiple', :reset => "true" %>
+<h5>Please check the following list of hosts whose Hostgroup will be changed:</h4>
+<ul>
+  <% for host in @hosts %>
+    <li>
+      <%= hidden_field_tag "host_ids[]", host.id %>
+      <%= host.try(:hostgroup) %>
+      <%= host.try(:name) %>
+    </li>
+  <% end %>
+</ul>
